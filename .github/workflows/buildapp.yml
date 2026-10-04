@@ -85,15 +85,41 @@ jobs:
               env:
                 THEOS: ${{ github.workspace }}/theos
 
-            - name: Prepare sing-box Libbox
+            - name: Setup Go for sing-box
+              uses: actions/setup-go@v6
+              with:
+                go-version: '1.25.5'
+                cache: false
+
+            - name: Build minimal sing-box Libbox from official source
               run: |
-                cd main
-                mkdir -p vendor-libbox
-                curl -L --fail --retry 3 -o vendor-libbox/Libbox-ios.xcframework.zip \
-                  https://github.com/proother/sing-box-lib/releases/download/v1.14.2/Libbox-ios.xcframework.zip
-                echo "40382d6e402edb8ac71bbac92435ef200ae1004e11291c5454a5c0fa48eb34a0  vendor-libbox/Libbox-ios.xcframework.zip" | shasum -a 256 -c -
-                ditto -x -k vendor-libbox/Libbox-ios.xcframework.zip vendor-libbox
-                test -f vendor-libbox/Libbox.xcframework/ios-arm64/Libbox.framework/Versions/A/Libbox
+                git clone --depth 1 --branch v1.14.2 https://github.com/SagerNet/sing-box.git sing-box-src
+                cd sing-box-src
+
+                go install github.com/sagernet/gomobile/cmd/gomobile@v0.1.12
+                go install github.com/sagernet/gomobile/cmd/gobind@v0.1.12
+                "$(go env GOPATH)/bin/gomobile" init
+
+                python3 - <<'PY'
+                from pathlib import Path
+                p = Path("cmd/internal/build_libbox/main.go")
+                s = p.read_text()
+                old = 'sharedTags = append(sharedTags, "with_quic", "with_wireguard", "with_utls", "with_naive_outbound", "with_clash_api", "with_usbip", "with_openvpn", "with_openconnect", "badlinkname", "tfogo_checklinkname0")'
+                new = 'sharedTags = append(sharedTags, "with_utls", "badlinkname", "tfogo_checklinkname0")'
+                if old not in s:
+                    raise SystemExit("expected sharedTags line not found")
+                s = s.replace(old, new)
+                tailscale = 'sharedTags = append(sharedTags, "with_tailscale", "ts_omit_logtail", "ts_omit_ssh", "ts_omit_drive", "ts_omit_taildrop", "ts_omit_webclient", "ts_omit_doctor", "ts_omit_capture", "ts_omit_kube", "ts_omit_aws", "ts_omit_synology", "ts_omit_bird")'
+                s = s.replace(tailscale, '// tailscale intentionally excluded for the embedded Instagram client')
+                s = s.replace('darwinTags = append(darwinTags, "with_dhcp", "grpcnotrace")', 'darwinTags = append(darwinTags, "grpcnotrace")')
+                p.write_text(s)
+                PY
+
+                go run ./cmd/internal/build_libbox -target apple -platform ios
+
+                mkdir -p ../main/vendor-libbox
+                mv Libbox.xcframework ../main/vendor-libbox/Libbox.xcframework
+                test -f ../main/vendor-libbox/Libbox.xcframework/ios-arm64/Libbox.framework/Versions/A/Libbox
 
             - name: Prepare Instagram IPA
               run: |
