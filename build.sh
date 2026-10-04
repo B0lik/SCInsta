@@ -77,20 +77,8 @@ then
     rm -f packages/SCInsta-sideloaded.ipa
     cyan -i "packages/${ipaFile}" -o packages/SCInsta-sideloaded.ipa -f $SCINSTAPATH $FLEXPATH -c $COMPRESSION -m 15.0 -du
 
-    # Bundle the pinned sing-box Libbox framework used by the app-local VPN subscription tunnel.
-    LIBBOX="vendor-libbox/Libbox.xcframework/ios-arm64/Libbox.framework"
-    if [ ! -f "$LIBBOX/Versions/A/Libbox" ]; then
-        echo -e '\033[1m\033[0;31mLibbox.framework not found. The build workflow must prepare vendor-libbox first.\033[0m'
-        exit 1
-    fi
-
-    IPA_TMP="$(mktemp -d)"
-    unzip -q packages/SCInsta-sideloaded.ipa -d "$IPA_TMP"
-    mkdir -p "$IPA_TMP/Payload/Instagram.app/Frameworks"
-    cp -R "$LIBBOX" "$IPA_TMP/Payload/Instagram.app/Frameworks/Libbox.framework"
-    rm -f packages/SCInsta-sideloaded.ipa
-    (cd "$IPA_TMP" && zip -qry "$OLDPWD/packages/SCInsta-sideloaded.ipa" Payload)
-    rm -rf "$IPA_TMP"
+    # Libbox is linked statically into SCInsta.dylib during compilation,
+    # so no additional runtime framework needs to be embedded.
     
     # Patch IPA for sideloading
     ipapatch --input "packages/SCInsta-sideloaded.ipa" --inplace --noconfirm

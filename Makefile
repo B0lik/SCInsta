@@ -12,7 +12,8 @@ $(TWEAK_NAME)_PRIVATE_FRAMEWORKS = Preferences
 
 LIBBOX_FRAMEWORK := $(THEOS_PROJECT_DIR)/vendor-libbox/Libbox.xcframework/ios-arm64/Libbox.framework
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc -Wno-unsupported-availability-guard -Wno-unused-value -Wno-deprecated-declarations -Wno-nullability-completeness -Wno-unused-function -Wno-incompatible-pointer-types -I$(LIBBOX_FRAMEWORK)/Versions/A/Headers
-$(TWEAK_NAME)_LDFLAGS += -F$(dir $(LIBBOX_FRAMEWORK)) -framework Libbox -Wl,-rpath,@executable_path/Frameworks
+$(TWEAK_NAME)_FRAMEWORKS += CoreTelephony Network
+$(TWEAK_NAME)_LDFLAGS += -Wl,-force_load,$(LIBBOX_FRAMEWORK)/Versions/A/Libbox -lresolv -lc++
 $(TWEAK_NAME)_LOGOSFLAGS = --c warnings=none
 
 CCFLAGS += -std=c++11
