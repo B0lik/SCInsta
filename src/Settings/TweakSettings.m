@@ -36,6 +36,10 @@
                                                                        subtitle:@"Адрес, порт и при необходимости логин/пароль"
                                                                            icon:[SCISymbol symbolWithName:@"server.rack"]
                                                                          action:^(void) { [SCIProxyManager presentConfigurationUI]; }],
+                                                [SCISetting buttonCellWithTitle:@"Проверить прокси"
+                                                                       subtitle:@"Проверяет доступ к Instagram через настроенный прокси"
+                                                                           icon:[SCISymbol symbolWithName:@"network.badge.shield.half.filled"]
+                                                                         action:^(void) { [SCIProxyManager presentConnectionTest]; }],
                                                 [SCISetting staticCellWithTitle:@"Текущий статус"
                                                                       subtitle:[SCIProxyManager statusText]
                                                                           icon:[SCISymbol symbolWithName:@"checkmark.shield"]]
@@ -196,7 +200,7 @@
                                         @{
                                             @"header": @"",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Подтверждать подписку" subtitle:@"Shows an alert when you click the follow button to confirm the follow" defaultsKey:@"follow_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать подписку" subtitle:@"Просит подтверждение перед подпиской на аккаунт" defaultsKey:@"follow_confirm"],
                                                 [SCISetting switchCellWithTitle:@"Подтверждать репост" subtitle:@"Просит подтверждение перед репостом" defaultsKey:@"repost_confirm"],
                                                 [SCISetting switchCellWithTitle:@"Подтверждать звонок" subtitle:@"Просит подтверждение перед аудио/видеозвонком" defaultsKey:@"call_confirm"],
                                                 [SCISetting switchCellWithTitle:@"Подтверждать голосовые сообщения" subtitle:@"Просит подтверждение перед отправкой голосового сообщения" defaultsKey:@"voice_message_confirm"],

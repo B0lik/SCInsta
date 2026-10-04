@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)applyToConfiguration:(NSURLSessionConfiguration *)configuration;
 + (NSString *)statusText;
 + (void)presentConfigurationUI;
++ (void)presentConnectionTest;
 
 @end
 
