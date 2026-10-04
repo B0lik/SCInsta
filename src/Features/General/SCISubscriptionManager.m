@@ -2,7 +2,7 @@
 #import <UIKit/UIKit.h>
 #import <objc/message.h>
 #import <dlfcn.h>
-#import <Libbox/Libbox.objc.h>
+#import "Libbox.objc.h"
 #import "../../Utils.h"
 
 static NSString * const kSCISubURL = @"sci_subscription_url";
