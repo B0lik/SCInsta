@@ -1,4 +1,5 @@
 #import "TweakSettings.h"
+#import "../Features/General/SCIProxyManager.h"
 
 @implementation SCITweakSettings
 
@@ -18,60 +19,77 @@
         @{
             @"header": @"",
             @"rows": @[
-                [SCISetting linkCellWithTitle:@"Donate" subtitle:@"Consider donating to support this tweak's development!" icon:[SCISymbol symbolWithName:@"heart.circle.fill" color:[UIColor systemPinkColor] size:20.0] url:@"https://ko-fi.com/SoCuul"]
+                [SCISetting linkCellWithTitle:@"Поддержать разработчика" subtitle:@"Поддержать разработку SCInsta" icon:[SCISymbol symbolWithName:@"heart.circle.fill" color:[UIColor systemPinkColor] size:20.0] url:@"https://ko-fi.com/SoCuul"]
             ]
         },
         @{
             @"header": @"",
             @"rows": @[
-                [SCISetting navigationCellWithTitle:@"General"
+                [SCISetting navigationCellWithTitle:@"Сеть / прокси"
+                                           subtitle:[SCIProxyManager statusText]
+                                               icon:[SCISymbol symbolWithName:@"network"]
+                                        navSections:@[@{
+                                            @"header": @"Доступ без отдельного VPN",
+                                            @"footer": @"Прокси применяется только к сетевым запросам Instagram. Для работы нужен доступный HTTP(S) или SOCKS5-прокси. TLS не расшифровывается.",
+                                            @"rows": @[
+                                                [SCISetting buttonCellWithTitle:@"Настроить прокси"
+                                                                       subtitle:@"Адрес, порт и при необходимости логин/пароль"
+                                                                           icon:[SCISymbol symbolWithName:@"server.rack"]
+                                                                         action:^(void) { [SCIProxyManager presentConfigurationUI]; }],
+                                                [SCISetting staticCellWithTitle:@"Текущий статус"
+                                                                      subtitle:[SCIProxyManager statusText]
+                                                                          icon:[SCISymbol symbolWithName:@"checkmark.shield"]]
+                                            ]
+                                        }]
+                ],
+                [SCISetting navigationCellWithTitle:@"Основные"
                                            subtitle:@""
                                                icon:[SCISymbol symbolWithName:@"gear"]
                                         navSections:@[@{
                                             @"header": @"",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Hide ads" subtitle:@"Removes all ads from the Instagram app" defaultsKey:@"hide_ads"],
-                                                [SCISetting switchCellWithTitle:@"Hide Meta AI" subtitle:@"Hides the meta ai buttons/functionality within the app" defaultsKey:@"hide_meta_ai"],
-                                                [SCISetting switchCellWithTitle:@"Copy description" subtitle:@"Copy description text fields by long-pressing on them" defaultsKey:@"copy_description"],
-                                                [SCISetting switchCellWithTitle:@"Do not save recent searches" subtitle:@"Search bars will no longer save your recent searches" defaultsKey:@"no_recent_searches"],
-                                                [SCISetting switchCellWithTitle:@"Use detailed color picker" subtitle:@"Long press on the eyedropper tool in stories to customize the text color more precisely" defaultsKey:@"detailed_color_picker"],
-                                                [SCISetting switchCellWithTitle:@"Enable liquid glass buttons" subtitle:@"Enables experimental liquid glass buttons within the app" defaultsKey:@"liquid_glass_buttons" requiresRestart:YES],
-                                                [SCISetting switchCellWithTitle:@"Enable liquid glass surfaces" subtitle:@"Enables liquid glass for other elements, such as menus" defaultsKey:@"liquid_glass_surfaces" requiresRestart:YES],
-                                                [SCISetting switchCellWithTitle:@"Enable teen app icons" subtitle:@"When enabled, hold down on the Instagram logo to change the app icon" defaultsKey:@"teen_app_icons" requiresRestart:YES]
+                                                [SCISetting switchCellWithTitle:@"Скрыть рекламу" subtitle:@"Удаляет рекламу из Instagram" defaultsKey:@"hide_ads"],
+                                                [SCISetting switchCellWithTitle:@"Скрыть Meta AI" subtitle:@"Скрывает кнопки и функции Meta AI" defaultsKey:@"hide_meta_ai"],
+                                                [SCISetting switchCellWithTitle:@"Копировать описание" subtitle:@"Копирование текста описания долгим нажатием" defaultsKey:@"copy_description"],
+                                                [SCISetting switchCellWithTitle:@"Не сохранять историю поиска" subtitle:@"Поиск больше не будет сохранять недавние запросы" defaultsKey:@"no_recent_searches"],
+                                                [SCISetting switchCellWithTitle:@"Расширенная палитра цветов" subtitle:@"Удерживайте пипетку в Stories для точной настройки цвета" defaultsKey:@"detailed_color_picker"],
+                                                [SCISetting switchCellWithTitle:@"Включить Liquid Glass для кнопок" subtitle:@"Включает экспериментальный эффект Liquid Glass для кнопок" defaultsKey:@"liquid_glass_buttons" requiresRestart:YES],
+                                                [SCISetting switchCellWithTitle:@"Включить Liquid Glass для поверхностей" subtitle:@"Включает Liquid Glass для меню и других элементов" defaultsKey:@"liquid_glass_surfaces" requiresRestart:YES],
+                                                [SCISetting switchCellWithTitle:@"Включить подростковые иконки приложения" subtitle:@"После включения удерживайте логотип Instagram для смены иконки" defaultsKey:@"teen_app_icons" requiresRestart:YES]
                                             ]
                                         },
                                         @{
-                                            @"header": @"Notes",
+                                            @"header": @"Заметки",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Hide notes tray" subtitle:@"Hides the notes tray in the dm inbox" defaultsKey:@"hide_notes_tray"],
-                                                [SCISetting switchCellWithTitle:@"Hide friends map" subtitle:@"Hides the friends map icon in the notes tray" defaultsKey:@"hide_friends_map"],
-                                                [SCISetting switchCellWithTitle:@"Enable note theming" subtitle:@"Enables the ability to use the notes theme picker" defaultsKey:@"enable_notes_customization"],
-                                                [SCISetting switchCellWithTitle:@"Custom note themes" subtitle:@"Provides an option to set custom emojis and background/text colors" defaultsKey:@"custom_note_themes"],
+                                                [SCISetting switchCellWithTitle:@"Скрыть панель заметок" subtitle:@"Скрывает панель заметок в Direct" defaultsKey:@"hide_notes_tray"],
+                                                [SCISetting switchCellWithTitle:@"Скрыть карту друзей" subtitle:@"Скрывает значок карты друзей в панели заметок" defaultsKey:@"hide_friends_map"],
+                                                [SCISetting switchCellWithTitle:@"Темы заметок" subtitle:@"Включает выбор темы заметок" defaultsKey:@"enable_notes_customization"],
+                                                [SCISetting switchCellWithTitle:@"Свои темы заметок" subtitle:@"Позволяет менять эмодзи, фон и цвет текста" defaultsKey:@"custom_note_themes"],
                                             ]
                                         },
                                         @{
-                                            @"header": @"Focus/distractions",
+                                            @"header": @"Фокус / отвлекающий контент",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"No suggested users" subtitle:@"Hides all suggested users for you to follow, outside your feed" defaultsKey:@"no_suggested_users"],
-                                                [SCISetting switchCellWithTitle:@"No suggested chats" subtitle:@"Hides the suggested broadcast channels in direct messages" defaultsKey:@"no_suggested_chats"],
-                                                [SCISetting switchCellWithTitle:@"Hide explore posts grid" subtitle:@"Hides the grid of suggested posts on the explore/search tab" defaultsKey:@"hide_explore_grid"],
-                                                [SCISetting switchCellWithTitle:@"Hide trending searches" subtitle:@"Hides the trending searches under the explore search bar" defaultsKey:@"hide_trending_searches"],
+                                                [SCISetting switchCellWithTitle:@"Без рекомендаций пользователей" subtitle:@"Скрывает рекомендации аккаунтов вне ленты" defaultsKey:@"no_suggested_users"],
+                                                [SCISetting switchCellWithTitle:@"Без рекомендованных чатов" subtitle:@"Скрывает рекомендованные каналы в Direct" defaultsKey:@"no_suggested_chats"],
+                                                [SCISetting switchCellWithTitle:@"Скрыть сетку рекомендаций" subtitle:@"Скрывает рекомендованные публикации на вкладке поиска" defaultsKey:@"hide_explore_grid"],
+                                                [SCISetting switchCellWithTitle:@"Скрыть популярные запросы" subtitle:@"Скрывает популярные запросы под строкой поиска" defaultsKey:@"hide_trending_searches"],
                                             ]
                                         }]
                 ],
-                [SCISetting navigationCellWithTitle:@"Feed"
+                [SCISetting navigationCellWithTitle:@"Лента"
                                            subtitle:@""
                                                icon:[SCISymbol symbolWithName:@"rectangle.stack"]
                                         navSections:@[@{
                                             @"header": @"",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Hide stories tray" subtitle:@"Hides the story tray at the top and within your feed" defaultsKey:@"hide_stories_tray"],
-                                                [SCISetting switchCellWithTitle:@"Hide entire feed" subtitle:@"Removes all content from your home feed, including posts" defaultsKey:@"hide_entire_feed"],
-                                                [SCISetting switchCellWithTitle:@"No suggested posts" subtitle:@"Removes suggested posts from your feed" defaultsKey:@"no_suggested_post"],
-                                                [SCISetting switchCellWithTitle:@"No suggested for you" subtitle:@"Hides suggested accounts for you to follow" defaultsKey:@"no_suggested_account"],
-                                                [SCISetting switchCellWithTitle:@"No suggested reels" subtitle:@"Hides suggested reels to watch" defaultsKey:@"no_suggested_reels"],
-                                                [SCISetting switchCellWithTitle:@"No suggested threads posts" subtitle:@"Hides suggested threads posts" defaultsKey:@"no_suggested_threads"],
-                                                [SCISetting switchCellWithTitle:@"Disable video autoplay" subtitle:@"Prevents videos on your feed from playing automatically" defaultsKey:@"disable_feed_autoplay"]
+                                                [SCISetting switchCellWithTitle:@"Скрыть Stories" subtitle:@"Скрывает панель Stories сверху и в ленте" defaultsKey:@"hide_stories_tray"],
+                                                [SCISetting switchCellWithTitle:@"Скрыть всю ленту" subtitle:@"Удаляет весь контент из домашней ленты" defaultsKey:@"hide_entire_feed"],
+                                                [SCISetting switchCellWithTitle:@"Без рекомендованных публикаций" subtitle:@"Убирает рекомендованные публикации из ленты" defaultsKey:@"no_suggested_post"],
+                                                [SCISetting switchCellWithTitle:@"Без рекомендаций «для вас»" subtitle:@"Скрывает предложенные аккаунты" defaultsKey:@"no_suggested_account"],
+                                                [SCISetting switchCellWithTitle:@"Без рекомендованных Reels" subtitle:@"Убирает рекомендованные Reels" defaultsKey:@"no_suggested_reels"],
+                                                [SCISetting switchCellWithTitle:@"Без рекомендаций Threads" subtitle:@"Убирает рекомендованные публикации Threads" defaultsKey:@"no_suggested_threads"],
+                                                [SCISetting switchCellWithTitle:@"Отключить автозапуск видео" subtitle:@"Не запускает видео в ленте автоматически" defaultsKey:@"disable_feed_autoplay"]
                                             ]
                                         }]
                 ],
@@ -81,112 +99,112 @@
                                         navSections:@[@{
                                             @"header": @"",
                                             @"rows": @[
-                                                [SCISetting menuCellWithTitle:@"Tap Controls" subtitle:@"Change what happens when you tap on a reel" menu:[self menus][@"reels_tap_control"]],
-                                                [SCISetting switchCellWithTitle:@"Always show progress scrubber" subtitle:@"Forces the progress bar to appear on every reel" defaultsKey:@"reels_show_scrubber"],
-                                                [SCISetting switchCellWithTitle:@"Disable auto-unmuting reels" subtitle:@"Prevents reels from unmuting when the volume/silent button is pressed" defaultsKey:@"disable_auto_unmuting_reels" requiresRestart:YES],
-                                                [SCISetting switchCellWithTitle:@"Confirm reel refresh" subtitle:@"Shows an alert when you trigger a reels refresh" defaultsKey:@"refresh_reel_confirm"],
+                                                [SCISetting menuCellWithTitle:@"Действие по нажатию" subtitle:@"Выберите действие при нажатии на Reel" menu:[self menus][@"reels_tap_control"]],
+                                                [SCISetting switchCellWithTitle:@"Всегда показывать полосу прогресса" subtitle:@"Всегда показывает полосу прокрутки видео" defaultsKey:@"reels_show_scrubber"],
+                                                [SCISetting switchCellWithTitle:@"Не включать звук Reels автоматически" subtitle:@"Не включает звук Reels автоматически при изменении громкости" defaultsKey:@"disable_auto_unmuting_reels" requiresRestart:YES],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать обновление Reels" subtitle:@"Показывает подтверждение перед обновлением Reels" defaultsKey:@"refresh_reel_confirm"],
                                             ]
                                         },
                                         @{
-                                            @"header": @"Hiding",
+                                            @"header": @"Скрытие",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Hide reels header" subtitle:@"Hides the top navigation bar when watching reels" defaultsKey:@"hide_reels_header"],
-                                                [SCISetting switchCellWithTitle:@"Hide reels blend button" subtitle:@"Hides the button in DMs to open a reels blend" defaultsKey:@"hide_reels_blend"]
+                                                [SCISetting switchCellWithTitle:@"Скрыть верхнюю панель Reels" subtitle:@"Скрывает верхнюю панель при просмотре Reels" defaultsKey:@"hide_reels_header"],
+                                                [SCISetting switchCellWithTitle:@"Скрыть кнопку Blend" subtitle:@"Скрывает кнопку Blend для Reels в Direct" defaultsKey:@"hide_reels_blend"]
                                             ]
                                         },
                                         @{
-                                            @"header": @"Limits",
+                                            @"header": @"Ограничения",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Disable scrolling reels" subtitle:@"Prevents reels from being scrolled to the next video" defaultsKey:@"disable_scrolling_reels" requiresRestart:YES],
-                                                [SCISetting switchCellWithTitle:@"Prevent doom scrolling" subtitle:@"Limits the amount of reels available to scroll at any given time, and prevents refreshing" defaultsKey:@"prevent_doom_scrolling"],
-                                                [SCISetting stepperCellWithTitle:@"Doom scrolling limit" subtitle:@"Only loads %@ %@" defaultsKey:@"doom_scrolling_reel_count" min:1 max:100 step:1 label:@"reels" singularLabel:@"reel"]
+                                                [SCISetting switchCellWithTitle:@"Запретить листание Reels" subtitle:@"Не позволяет свайпнуть к следующему Reel" defaultsKey:@"disable_scrolling_reels" requiresRestart:YES],
+                                                [SCISetting switchCellWithTitle:@"Ограничить бесконечный скроллинг" subtitle:@"Ограничивает число доступных Reels и запрещает обновление бесконечной ленты" defaultsKey:@"prevent_doom_scrolling"],
+                                                [SCISetting stepperCellWithTitle:@"Лимит Reels" subtitle:@"Загружать только %@ %@" defaultsKey:@"doom_scrolling_reel_count" min:1 max:100 step:1 label:@"reels" singularLabel:@"reel"]
                                             ]
                                         }]
                 ],
-                [SCISetting navigationCellWithTitle:@"Saving"
+                [SCISetting navigationCellWithTitle:@"Скачивание"
                                            subtitle:@""
                                                icon:[SCISymbol symbolWithName:@"tray.and.arrow.down"]
                                         navSections:@[@{
                                             @"header": @"",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Download feed posts" subtitle:@"Long-press with finger(s) to download posts in the home tab" defaultsKey:@"dw_feed_posts"],
-                                                [SCISetting switchCellWithTitle:@"Download reels" subtitle:@"Long-press with finger(s) on a reel to download" defaultsKey:@"dw_reels"],
-                                                [SCISetting switchCellWithTitle:@"Download stories" subtitle:@"Long-press with finger(s) while viewing someone's story to download" defaultsKey:@"dw_story"],
-                                                [SCISetting switchCellWithTitle:@"Save profile picture" subtitle:@"On someone's profile, click their profile picture to enlarge it, then hold to download" defaultsKey:@"save_profile"]
+                                                [SCISetting switchCellWithTitle:@"Скачивать публикации" subtitle:@"Долгое нажатие пальцами скачивает публикацию" defaultsKey:@"dw_feed_posts"],
+                                                [SCISetting switchCellWithTitle:@"Скачивать Reels" subtitle:@"Долгое нажатие на Reel скачивает его" defaultsKey:@"dw_reels"],
+                                                [SCISetting switchCellWithTitle:@"Скачивать Stories" subtitle:@"Долгое нажатие во время просмотра Story скачивает её" defaultsKey:@"dw_story"],
+                                                [SCISetting switchCellWithTitle:@"Сохранять фото профиля" subtitle:@"Откройте аватар в профиле и удерживайте для скачивания" defaultsKey:@"save_profile"]
                                             ]
                                         },
                                         @{
-                                            @"header": @"Customize gestures",
+                                            @"header": @"Настройка жестов",
                                             @"rows": @[
-                                                [SCISetting stepperCellWithTitle:@"Finger count for long-press" subtitle:@"Downloads with %@ %@" defaultsKey:@"dw_finger_count" min:1 max:5 step:1 label:@"fingers" singularLabel:@"finger"],
-                                                [SCISetting stepperCellWithTitle:@"Long-press hold time" subtitle:@"Press finger(s) for %@ %@" defaultsKey:@"dw_finger_duration" min:0 max:10 step:0.25 label:@"sec" singularLabel:@"sec"]
+                                                [SCISetting stepperCellWithTitle:@"Пальцев для долгого нажатия" subtitle:@"Скачивание: %@ %@" defaultsKey:@"dw_finger_count" min:1 max:5 step:1 label:@"fingers" singularLabel:@"finger"],
+                                                [SCISetting stepperCellWithTitle:@"Время удержания" subtitle:@"Удерживать %@ %@" defaultsKey:@"dw_finger_duration" min:0 max:10 step:0.25 label:@"sec" singularLabel:@"sec"]
                                             ]
                                         }]
                 ],
-                [SCISetting navigationCellWithTitle:@"Stories and messages"
+                [SCISetting navigationCellWithTitle:@"Stories и сообщения"
                                            subtitle:@""
                                                icon:[SCISymbol symbolWithName:@"rectangle.portrait.on.rectangle.portrait.angled"]
                                         navSections:@[@{
-                                            @"header": @"Messages",
+                                            @"header": @"Сообщения",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Keep deleted messages" subtitle:@"Saves deleted messages in chat conversations" defaultsKey:@"keep_deleted_message"],
-                                                [SCISetting switchCellWithTitle:@"Manually mark messages as seen" subtitle:@"Adds a button to DM threads, which will mark messages as seen" defaultsKey:@"remove_lastseen"],
-                                                [SCISetting switchCellWithTitle:@"Disable typing status" subtitle:@"Prevents the typing indicator from being shown to others when you're typing in DMs" defaultsKey:@"disable_typing_status"],
+                                                [SCISetting switchCellWithTitle:@"Сохранять удалённые сообщения" subtitle:@"Сохраняет удалённые сообщения в чатах" defaultsKey:@"keep_deleted_message"],
+                                                [SCISetting switchCellWithTitle:@"Отмечать сообщения прочитанными вручную" subtitle:@"Добавляет кнопку ручной отметки сообщения как прочитанного" defaultsKey:@"remove_lastseen"],
+                                                [SCISetting switchCellWithTitle:@"Скрыть статус набора текста" subtitle:@"Не показывает собеседнику, что вы печатаете" defaultsKey:@"disable_typing_status"],
                                             ]
                                         },
                                         @{
-                                            @"header": @"Visual messages & stories",
+                                            @"header": @"Исчезающие сообщения и Stories",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Unlimited replay of visual messages" subtitle:@"Replays direct visual messages normal/once stories unlimited times (toggle with image check icon)" defaultsKey:@"unlimited_replay"],
-                                                [SCISetting switchCellWithTitle:@"Disable view-once limitations" subtitle:@"Makes view-once messages behave like normal visual messages (loopable/pauseable)" defaultsKey:@"disable_view_once_limitations"],
-                                                [SCISetting switchCellWithTitle:@"Disable screenshot detection" subtitle:@"Removes the screenshot-prevention features for visual messages in DMs" defaultsKey:@"remove_screenshot_alert"],
-                                                [SCISetting switchCellWithTitle:@"Disable story seen receipt" subtitle:@"Hides the notification for others when you view their story" defaultsKey:@"no_seen_receipt"],
-                                                [SCISetting switchCellWithTitle:@"Disable instants creation" subtitle:@"Hides the functionality to create/send instants" defaultsKey:@"disable_instants_creation" requiresRestart:YES]
+                                                [SCISetting switchCellWithTitle:@"Безлимитный повтор исчезающих сообщений" subtitle:@"Позволяет повторно смотреть исчезающие фото и видео" defaultsKey:@"unlimited_replay"],
+                                                [SCISetting switchCellWithTitle:@"Убрать ограничение «один просмотр»" subtitle:@"Позволяет повторять и ставить на паузу сообщения «один просмотр»" defaultsKey:@"disable_view_once_limitations"],
+                                                [SCISetting switchCellWithTitle:@"Отключить обнаружение скриншотов" subtitle:@"Убирает ограничения на скриншоты в Direct" defaultsKey:@"remove_screenshot_alert"],
+                                                [SCISetting switchCellWithTitle:@"Не отправлять отметку просмотра Story" subtitle:@"Не сообщает другим о просмотре их Story" defaultsKey:@"no_seen_receipt"],
+                                                [SCISetting switchCellWithTitle:@"Отключить создание Instants" subtitle:@"Скрывает создание и отправку Instants" defaultsKey:@"disable_instants_creation" requiresRestart:YES]
                                             ]
                                         }]
                 ],
-                [SCISetting navigationCellWithTitle:@"Navigation"
+                [SCISetting navigationCellWithTitle:@"Навигация"
                                            subtitle:@""
                                                icon:[SCISymbol symbolWithName:@"hand.draw.fill"]
                                         navSections:@[@{
                                             @"header": @"",
                                             @"rows": @[
-                                                [SCISetting menuCellWithTitle:@"Icon order" subtitle:@"The order of the icons on the bottom navigation bar" menu:[self menus][@"nav_icon_ordering"]],
-                                                [SCISetting menuCellWithTitle:@"Swipe between tabs" subtitle:@"Lets you swipe to switch between navigation bar tabs" menu:[self menus][@"swipe_nav_tabs"]],
+                                                [SCISetting menuCellWithTitle:@"Порядок иконок" subtitle:@"Порядок иконок в нижней панели" menu:[self menus][@"nav_icon_ordering"]],
+                                                [SCISetting menuCellWithTitle:@"Свайп между вкладками" subtitle:@"Переключение вкладок свайпом" menu:[self menus][@"swipe_nav_tabs"]],
                                             ]
                                         },
                                         @{
-                                            @"header": @"Hiding tabs",
+                                            @"header": @"Скрытие вкладок",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Hide feed tab" subtitle:@"Hides the feed/home tab on the bottom navigation bar" defaultsKey:@"hide_feed_tab" requiresRestart:YES],
-                                                [SCISetting switchCellWithTitle:@"Hide explore tab" subtitle:@"Hides the explore/search tab on the bottom navigation bar" defaultsKey:@"hide_explore_tab" requiresRestart:YES],
-                                                [SCISetting switchCellWithTitle:@"Hide reels tab" subtitle:@"Hides the reels tab on the bottom navigation bar" defaultsKey:@"hide_reels_tab" requiresRestart:YES],
-                                                [SCISetting switchCellWithTitle:@"Hide create tab" subtitle:@"Hides the create tab on the bottom navigation bar" defaultsKey:@"hide_create_tab" requiresRestart:YES]
+                                                [SCISetting switchCellWithTitle:@"Скрыть вкладку «Главная»" subtitle:@"Скрывает вкладку домашней ленты снизу" defaultsKey:@"hide_feed_tab" requiresRestart:YES],
+                                                [SCISetting switchCellWithTitle:@"Скрыть вкладку поиска" subtitle:@"Скрывает вкладку поиска снизу" defaultsKey:@"hide_explore_tab" requiresRestart:YES],
+                                                [SCISetting switchCellWithTitle:@"Скрыть вкладку Reels" subtitle:@"Скрывает вкладку Reels в нижней панели" defaultsKey:@"hide_reels_tab" requiresRestart:YES],
+                                                [SCISetting switchCellWithTitle:@"Скрыть кнопку создания" subtitle:@"Скрывает кнопку создания в нижней панели" defaultsKey:@"hide_create_tab" requiresRestart:YES]
                                             ]
                                         }]
                 ],
-                [SCISetting navigationCellWithTitle:@"Confirm actions"
+                [SCISetting navigationCellWithTitle:@"Подтверждение действий"
                                            subtitle:@""
                                                icon:[SCISymbol symbolWithName:@"checkmark"]
                                         navSections:@[@{
                                             @"header": @"",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Confirm like: Posts/Stories" subtitle:@"Shows an alert when you click the like button on posts or stories to confirm the like" defaultsKey:@"like_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm like: Reels" subtitle:@"Shows an alert when you click the like button on reels to confirm the like" defaultsKey:@"like_confirm_reels"]
+                                                [SCISetting switchCellWithTitle:@"Подтверждать лайк: публикации/Stories" subtitle:@"Просит подтверждение перед лайком публикации или Story" defaultsKey:@"like_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать лайк: Reels" subtitle:@"Просит подтверждение перед лайком Reel" defaultsKey:@"like_confirm_reels"]
                                             ]
                                         },
                                         @{
                                             @"header": @"",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Confirm follow" subtitle:@"Shows an alert when you click the follow button to confirm the follow" defaultsKey:@"follow_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm repost" subtitle:@"Shows an alert when you click the repost button to confirm before resposting" defaultsKey:@"repost_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm call" subtitle:@"Shows an alert when you click the audio/video call button to confirm before calling" defaultsKey:@"call_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm voice messages" subtitle:@"Shows an alert to confirm before sending a voice message" defaultsKey:@"voice_message_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm follow requests" subtitle:@"Shows an alert when you accept/decline a follow request" defaultsKey:@"follow_request_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm shh mode" subtitle:@"Shows an alert to confirm before toggling disappearing messages" defaultsKey:@"shh_mode_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm posting comment" subtitle:@"Shows an alert when you click the post comment button to confirm" defaultsKey:@"post_comment_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm changing theme" subtitle:@"Shows an alert when you change a chat theme to confirm" defaultsKey:@"change_direct_theme_confirm"],
-                                                [SCISetting switchCellWithTitle:@"Confirm sticker interaction" subtitle:@"Shows an alert when you click a sticker on someone's story to confirm the action" defaultsKey:@"sticker_interact_confirm"]
+                                                [SCISetting switchCellWithTitle:@"Подтверждать подписку" subtitle:@"Shows an alert when you click the follow button to confirm the follow" defaultsKey:@"follow_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать репост" subtitle:@"Просит подтверждение перед репостом" defaultsKey:@"repost_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать звонок" subtitle:@"Просит подтверждение перед аудио/видеозвонком" defaultsKey:@"call_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать голосовые сообщения" subtitle:@"Просит подтверждение перед отправкой голосового сообщения" defaultsKey:@"voice_message_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать запросы на подписку" subtitle:@"Просит подтверждение при принятии или отклонении запроса" defaultsKey:@"follow_request_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать исчезающие сообщения" subtitle:@"Просит подтверждение перед включением исчезающих сообщений" defaultsKey:@"shh_mode_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать комментарий" subtitle:@"Просит подтверждение перед публикацией комментария" defaultsKey:@"post_comment_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать смену темы чата" subtitle:@"Просит подтверждение перед сменой темы чата" defaultsKey:@"change_direct_theme_confirm"],
+                                                [SCISetting switchCellWithTitle:@"Подтверждать взаимодействие со стикерами" subtitle:@"Просит подтверждение перед нажатием на стикер в Story" defaultsKey:@"sticker_interact_confirm"]
                                             ]
                                         }]
                 ]
@@ -210,23 +228,23 @@
                 //                         }
                 //                         ]
                 // ],
-                [SCISetting navigationCellWithTitle:@"Debug"
+                [SCISetting navigationCellWithTitle:@"Отладка"
                                            subtitle:@""
                                                icon:[SCISymbol symbolWithName:@"ladybug"]
                                         navSections:@[@{
                                             @"header": @"FLEX",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Enable FLEX gesture" subtitle:@"Allows you to hold 5 fingers on the screen to open the FLEX explorer" defaultsKey:@"flex_instagram"],
-                                                [SCISetting switchCellWithTitle:@"Open FLEX on app launch" subtitle:@"Automatically opens the FLEX explorer when the app launches" defaultsKey:@"flex_app_launch"],
-                                                [SCISetting switchCellWithTitle:@"Open FLEX on app focus" subtitle:@"Automatically opens the FLEX explorer when the app is focused" defaultsKey:@"flex_app_start"]
+                                                [SCISetting switchCellWithTitle:@"Включить жест FLEX" subtitle:@"Удерживайте 5 пальцев для открытия FLEX" defaultsKey:@"flex_instagram"],
+                                                [SCISetting switchCellWithTitle:@"Открывать FLEX при запуске" subtitle:@"Автоматически открывает FLEX при запуске приложения" defaultsKey:@"flex_app_launch"],
+                                                [SCISetting switchCellWithTitle:@"Открывать FLEX при возврате в приложение" subtitle:@"Автоматически открывает FLEX при возврате в приложение" defaultsKey:@"flex_app_start"]
                                             ]
                                         },
                                         @{
                                             @"header": @"SCInsta",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Enable tweak settings quick-access" subtitle:@"Allows you to hold on the home tab to open the SCInsta settings" defaultsKey:@"settings_shortcut" requiresRestart:YES],
-                                                [SCISetting switchCellWithTitle:@"Show tweak settings on app launch" subtitle:@"Automatically opens the SCInsta settings when the app launches" defaultsKey:@"tweak_settings_app_launch"],
-                                                [SCISetting buttonCellWithTitle:@"Reset onboarding completion state"
+                                                [SCISetting switchCellWithTitle:@"Быстрый доступ к настройкам SCInsta" subtitle:@"Удерживайте кнопку «Главная», чтобы открыть настройки SCInsta" defaultsKey:@"settings_shortcut" requiresRestart:YES],
+                                                [SCISetting switchCellWithTitle:@"Показывать настройки SCInsta при запуске" subtitle:@"Автоматически открывает настройки SCInsta при запуске" defaultsKey:@"tweak_settings_app_launch"],
+                                                [SCISetting buttonCellWithTitle:@"Сбросить приветственный экран"
                                                                            subtitle:@""
                                                                                icon:nil
                                                                              action:^(void) { [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SCInstaFirstRun"]; [SCIUtils showRestartConfirmation];}
@@ -236,7 +254,7 @@
                                         @{
                                             @"header": @"Instagram",
                                             @"rows": @[
-                                                [SCISetting switchCellWithTitle:@"Disable safe mode" subtitle:@"Makes Instagram not reset settings after subsequent crashes (at your own risk)" defaultsKey:@"disable_safe_mode"]
+                                                [SCISetting switchCellWithTitle:@"Отключить безопасный режим" subtitle:@"Не даёт Instagram сбрасывать настройки после сбоев (на свой риск)" defaultsKey:@"disable_safe_mode"]
                                             ]
                                         },
                                         @{
@@ -270,10 +288,10 @@
             ]
         },
         @{
-            @"header": @"Credits",
+            @"header": @"О проекте",
             @"rows": @[
-                [SCISetting linkCellWithTitle:@"Developer" subtitle:@"SoCuul" imageUrl:@"https://i.imgur.com/c9CbytZ.png" url:@"https://socuul.dev"],
-                [SCISetting linkCellWithTitle:@"View Repo" subtitle:@"View the tweak's source code on GitHub" imageUrl:@"https://i.imgur.com/BBUNzeP.png" url:@"https://github.com/SoCuul/SCInsta"]
+                [SCISetting linkCellWithTitle:@"Разработчик" subtitle:@"SoCuul" imageUrl:@"https://i.imgur.com/c9CbytZ.png" url:@"https://socuul.dev"],
+                [SCISetting linkCellWithTitle:@"Открыть репозиторий" subtitle:@"Исходный код твика на GitHub" imageUrl:@"https://i.imgur.com/BBUNzeP.png" url:@"https://github.com/SoCuul/SCInsta"]
             ],
             @"footer": [NSString stringWithFormat:@"SCInsta %@\n\nInstagram v%@", SCIVersionString, [SCIUtils IGVersionString]]
         }
@@ -288,7 +306,7 @@
 ///
 
 + (NSString *)title {
-    return @"SCInsta Settings";
+    return @"Настройки SCInsta";
 }
 
 
@@ -311,7 +329,7 @@
 + (NSDictionary *)menus {
     return @{
         @"reels_tap_control": [UIMenu menuWithChildren:@[
-            [UICommand commandWithTitle:@"Default"
+            [UICommand commandWithTitle:@"По умолчанию"
                                     image:nil
                                     action:@selector(menuChanged:)
                             propertyList:@{
@@ -325,7 +343,7 @@
                         identifier:nil
                             options:UIMenuOptionsDisplayInline
                             children:@[
-                                [UICommand commandWithTitle:@"Pause/Play"
+                                [UICommand commandWithTitle:@"Пауза/Воспроизведение"
                                                         image:nil
                                                         action:@selector(menuChanged:)
                                                 propertyList:@{
@@ -334,7 +352,7 @@
                                                     @"requiresRestart": @YES
                                                 }
                                 ],
-                                [UICommand commandWithTitle:@"Mute/Unmute"
+                                [UICommand commandWithTitle:@"Выключить/Включить звук"
                                                         image:nil
                                                         action:@selector(menuChanged:)
                                                 propertyList:@{
@@ -348,7 +366,7 @@
         ]],
 
         @"nav_icon_ordering": [UIMenu menuWithChildren:@[
-            [UICommand commandWithTitle:@"Default"
+            [UICommand commandWithTitle:@"По умолчанию"
                                     image:nil
                                     action:@selector(menuChanged:)
                             propertyList:@{
@@ -362,7 +380,7 @@
                         identifier:nil
                             options:UIMenuOptionsDisplayInline
                             children:@[
-                                [UICommand commandWithTitle:@"Classic"
+                                [UICommand commandWithTitle:@"Классический"
                                                         image:nil
                                                         action:@selector(menuChanged:)
                                                 propertyList:@{
@@ -371,7 +389,7 @@
                                                     @"requiresRestart": @YES
                                                 }
                                 ],
-                                [UICommand commandWithTitle:@"Standard"
+                                [UICommand commandWithTitle:@"Стандартный"
                                                         image:nil
                                                         action:@selector(menuChanged:)
                                                 propertyList:@{
@@ -380,7 +398,7 @@
                                                     @"requiresRestart": @YES
                                                 }
                                 ],
-                                [UICommand commandWithTitle:@"Alternate"
+                                [UICommand commandWithTitle:@"Альтернативный"
                                                         image:nil
                                                         action:@selector(menuChanged:)
                                                 propertyList:@{
@@ -393,7 +411,7 @@
             ]
         ]],
         @"swipe_nav_tabs": [UIMenu menuWithChildren:@[
-            [UICommand commandWithTitle:@"Default"
+            [UICommand commandWithTitle:@"По умолчанию"
                                     image:nil
                                     action:@selector(menuChanged:)
                             propertyList:@{
@@ -407,7 +425,7 @@
                         identifier:nil
                             options:UIMenuOptionsDisplayInline
                             children:@[
-                                [UICommand commandWithTitle:@"Enabled"
+                                [UICommand commandWithTitle:@"Включено"
                                                         image:nil
                                                         action:@selector(menuChanged:)
                                                 propertyList:@{
@@ -416,7 +434,7 @@
                                                     @"requiresRestart": @YES
                                                 }
                                 ],
-                                [UICommand commandWithTitle:@"Disabled"
+                                [UICommand commandWithTitle:@"Выключено"
                                                         image:nil
                                                         action:@selector(menuChanged:)
                                                 propertyList:@{
@@ -453,7 +471,7 @@
                                 ]
                             ]
             ],
-            [UICommand commandWithTitle:@"Requires restart"
+            [UICommand commandWithTitle:@"Требуется перезапуск"
                                   image:nil
                                  action:@selector(menuChanged:)
                            propertyList:@{
