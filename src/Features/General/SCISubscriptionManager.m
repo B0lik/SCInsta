@@ -331,12 +331,10 @@ typedef void (*SCINWProxySetFailoverFn)(id, BOOL);
     if (decoded.length && ([decoded containsString:@"://"] || [decoded containsString:@"\n"])) trim = decoded;
 
     NSArray<NSString *> *lines = [trim componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-    NSInteger supported = 0;
     for (NSString *line in lines) {
         NSString *name = nil;
         NSDictionary *outbound = [self outboundFromLink:line name:&name];
         if (outbound) {
-            supported++;
             if (serverName) *serverName = name ?: @"VPN сервер";
             return [self configFromOutbound:outbound];
         }
