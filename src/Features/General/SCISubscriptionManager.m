@@ -13,7 +13,9 @@ static const int32_t kSCILocalPort = 2080;
 
 static LibboxCommandServer *sCommandServer = nil;
 static BOOL sRunning = NO;
+static BOOL sStarting = NO;
 static BOOL sSetupDone = NO;
+static dispatch_queue_t sTunnelQueue = nil;
 
 typedef id (*SCINWEndpointCreateHostFn)(const char *, const char *);
 typedef id (*SCINWProxyCreateHTTPConnectFn)(id, id);
@@ -29,13 +31,21 @@ typedef void (*SCINWProxySetFailoverFn)(id, BOOL);
     return [[[self defaults] stringForKey:kSCICachedConfig] length] > 0;
 }
 
++ (dispatch_queue_t)tunnelQueue {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sTunnelQueue = dispatch_queue_create("com.scinsta.vpn.serial", DISPATCH_QUEUE_SERIAL);
+    });
+    return sTunnelQueue;
+}
+
 + (BOOL)isRunning {
     return sRunning;
 }
 
 + (NSString *)statusText {
-    if (![[self defaults] boolForKey:kSCIEnabled]) return @"Выключен";
     NSString *name = [[self defaults] stringForKey:kSCIServerName] ?: @"";
+    if (sStarting) return @"Подключение…";
     if (sRunning) {
         return name.length ? [NSString stringWithFormat:@"Подключено • %@", name] : @"Подключено";
     }
@@ -395,25 +405,86 @@ typedef void (*SCINWProxySetFailoverFn)(id, BOOL);
     return YES;
 }
 
-+ (void)ensureStarted {
-    if (sRunning || ![[self defaults] boolForKey:kSCIEnabled]) return;
++ (void)connectWithCompletion:(void (^)(BOOL success, NSString *message))completion {
     NSString *config = [[self defaults] stringForKey:kSCICachedConfig];
-    if (!config.length) return;
-
-    NSError *error = nil;
-    if (![self startConfig:config error:&error]) {
-        NSLog(@"[SCInsta VPN] start failed: %@", error);
-        sRunning = NO;
+    if (!config.length) {
+        if (completion) completion(NO, @"Сначала импортируйте VPN-подписку.");
+        return;
     }
+
+    dispatch_async([self tunnelQueue], ^{
+        if (sRunning) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) completion(YES, @"VPN уже подключён.");
+            });
+            return;
+        }
+        if (sStarting) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) completion(NO, @"Подключение уже выполняется.");
+            });
+            return;
+        }
+
+        sStarting = YES;
+        NSError *error = nil;
+        BOOL ok = [self startConfig:config error:&error];
+        sStarting = NO;
+
+        if (!ok) {
+            sRunning = NO;
+            [[self defaults] setBool:NO forKey:kSCIEnabled];
+            [[self defaults] synchronize];
+        } else {
+            [[self defaults] setBool:YES forKey:kSCIEnabled];
+            [[self defaults] synchronize];
+        }
+
+        NSString *message = ok
+            ? [NSString stringWithFormat:@"Сервер: %@", [[self defaults] stringForKey:kSCIServerName] ?: @"VPN"]
+            : (error.localizedDescription ?: @"Не удалось запустить встроенный VPN.");
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) completion(ok, message);
+        });
+    });
+}
+
++ (void)toggleTunnel {
+    if (sRunning || sStarting) {
+        [self stopTunnel];
+        [[self defaults] setBool:NO forKey:kSCIEnabled];
+        [[self defaults] synchronize];
+        [self showAlert:@"VPN отключён" message:@"Instagram снова использует обычное соединение."];
+        return;
+    }
+
+    [self connectWithCompletion:^(BOOL success, NSString *message) {
+        [self showAlert:success ? @"VPN подключён" : @"Не удалось подключить VPN" message:message];
+    }];
 }
 
 + (void)stopTunnel {
-    if (sCommandServer) {
-        NSError *error = nil;
-        [sCommandServer closeService:&error];
-        if (error) NSLog(@"[SCInsta VPN] stop failed: %@", error);
-    }
-    sRunning = NO;
+    dispatch_sync([self tunnelQueue], ^{
+        if (sCommandServer) {
+            NSError *error = nil;
+            [sCommandServer closeService:&error];
+            if (error) NSLog(@"[SCInsta VPN] stop failed: %@", error);
+        }
+        sRunning = NO;
+        sStarting = NO;
+    });
+}
+
++ (void)resetSettings {
+    [self stopTunnel];
+    NSUserDefaults *d = [self defaults];
+    [d removeObjectForKey:kSCISubURL];
+    [d removeObjectForKey:kSCICachedConfig];
+    [d removeObjectForKey:kSCIServerName];
+    [d setBool:NO forKey:kSCIEnabled];
+    [d synchronize];
+    [self showAlert:@"VPN-настройки сброшены" message:@"Сохранённая подписка и конфигурация удалены. Instagram будет запускаться без встроенного VPN."];
 }
 
 + (void *)networkFrameworkHandle {
@@ -446,7 +517,10 @@ typedef void (*SCINWProxySetFailoverFn)(id, BOOL);
 }
 
 + (void)applyTunnelToConfiguration:(NSURLSessionConfiguration *)configuration {
-    [self ensureStarted];
+    // Never start sing-box from a NSURLSession hook. Starting the engine may
+    // itself create network objects, which can recurse into this hook and hang
+    // Instagram during launch. The hook only routes traffic when the user has
+    // explicitly connected the tunnel.
     if (!sRunning || !configuration) return;
     if ([self applyModernLocalProxy:configuration]) return;
 
@@ -488,31 +562,19 @@ typedef void (*SCINWProxySetFailoverFn)(id, BOOL);
             return;
         }
 
-        NSError *checkError = nil;
-        if (!LibboxCheckConfig(config, &checkError)) {
-            [self setupLibbox:nil];
-            checkError = nil;
-            if (!LibboxCheckConfig(config, &checkError)) {
-                [self showAlert:@"Конфигурация не поддерживается" message:checkError.localizedDescription ?: @"sing-box отклонил конфигурацию"];
-                return;
-            }
-        }
-
+        // Import is intentionally side-effect free: do not initialize or
+        // start Libbox here. A bad provider configuration must never be able to
+        // brick Instagram on the next launch.
         NSUserDefaults *d = [self defaults];
         [d setObject:urlString forKey:kSCISubURL];
         [d setObject:config forKey:kSCICachedConfig];
         [d setObject:name ?: @"VPN сервер" forKey:kSCIServerName];
-        [d setBool:YES forKey:kSCIEnabled];
+        [d setBool:NO forKey:kSCIEnabled];
         [d synchronize];
 
         [self stopTunnel];
-        NSError *startError = nil;
-        if (![self startConfig:config error:&startError]) {
-            [self showAlert:@"Подписка сохранена, но VPN не запустился" message:startError.localizedDescription ?: @"Ошибка запуска sing-box"];
-            return;
-        }
-        [self showAlert:@"VPN-подписка подключена"
-                message:[NSString stringWithFormat:@"Сервер: %@\nInstagram теперь использует этот туннель автоматически.", name ?: @"VPN сервер"]];
+        [self showAlert:@"Подписка импортирована"
+                message:[NSString stringWithFormat:@"Сервер: %@\n\nТеперь нажмите «Подключить VPN». Автозапуск специально отключён, чтобы Instagram всегда мог открыться.", name ?: @"VPN сервер"]];
     }];
     [task resume];
 }
@@ -531,22 +593,22 @@ typedef void (*SCINWProxySetFailoverFn)(id, BOOL);
         field.keyboardType = UIKeyboardTypeURL;
     }];
 
-    [alert addAction:[UIAlertAction actionWithTitle:@"Импортировать и подключить" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    [alert addAction:[UIAlertAction actionWithTitle:@"Импортировать подписку" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         NSString *url = alert.textFields.firstObject.text ?: @"";
         [self importURL:url];
     }]];
 
     if ([self isConfigured]) {
-        [alert addAction:[UIAlertAction actionWithTitle:@"Переподключить" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-            [self stopTunnel];
-            [[self defaults] setBool:YES forKey:kSCIEnabled];
-            [self ensureStarted];
-            [self showAlert:sRunning ? @"Подключено" : @"Не удалось подключиться" message:[self statusText]];
+        [alert addAction:[UIAlertAction actionWithTitle:(sRunning ? @"Отключить VPN" : @"Подключить VPN")
+                                                 style:(sRunning ? UIAlertActionStyleDestructive : UIAlertActionStyleDefault)
+                                               handler:^(UIAlertAction *action) {
+            [self toggleTunnel];
         }]];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Отключить VPN" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
-            [[self defaults] setBool:NO forKey:kSCIEnabled];
-            [[self defaults] synchronize];
-            [self stopTunnel];
+
+        [alert addAction:[UIAlertAction actionWithTitle:@"Сбросить VPN-настройки"
+                                                 style:UIAlertActionStyleDestructive
+                                               handler:^(UIAlertAction *action) {
+            [self resetSettings];
         }]];
     }
 
@@ -555,9 +617,8 @@ typedef void (*SCINWProxySetFailoverFn)(id, BOOL);
 }
 
 + (void)presentConnectionTest {
-    [self ensureStarted];
     if (!sRunning) {
-        [self showAlert:@"VPN не подключён" message:@"Сначала импортируйте подписку и подключитесь."];
+        [self showAlert:@"VPN не подключён" message:@"Сначала импортируйте подписку и нажмите «Подключить VPN»."];
         return;
     }
 

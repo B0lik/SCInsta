@@ -36,10 +36,18 @@
                                                                        subtitle:@"VLESS, VMess, Trojan, Shadowsocks или sing-box JSON"
                                                                            icon:[SCISymbol symbolWithName:@"link"]
                                                                          action:^(void) { [SCISubscriptionManager presentSubscriptionUI]; }],
+                                                [SCISetting buttonCellWithTitle:@"Подключить / отключить VPN"
+                                                                       subtitle:@"Запускается только вручную — без автозапуска при открытии Instagram"
+                                                                           icon:[SCISymbol symbolWithName:@"power"]
+                                                                         action:^(void) { [SCISubscriptionManager toggleTunnel]; }],
                                                 [SCISetting buttonCellWithTitle:@"Проверить VPN"
                                                                        subtitle:@"Показывает внешний IP через встроенный туннель"
                                                                            icon:[SCISymbol symbolWithName:@"network.badge.shield.half.filled"]
                                                                          action:^(void) { [SCISubscriptionManager presentConnectionTest]; }],
+                                                [SCISetting buttonCellWithTitle:@"Сбросить VPN-настройки"
+                                                                       subtitle:@"Удаляет подписку и аварийно отключает встроенный VPN"
+                                                                           icon:[SCISymbol symbolWithName:@"trash"]
+                                                                         action:^(void) { [SCISubscriptionManager resetSettings]; }],
                                                 [SCISetting staticCellWithTitle:@"Текущий статус"
                                                                       subtitle:[SCISubscriptionManager statusText]
                                                                           icon:[SCISymbol symbolWithName:@"checkmark.shield"]]

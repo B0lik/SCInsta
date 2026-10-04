@@ -10,8 +10,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)presentSubscriptionUI;
 + (void)presentConnectionTest;
++ (void)toggleTunnel;
++ (void)resetSettings;
 
-+ (void)ensureStarted;
 + (void)stopTunnel;
 + (void)applyTunnelToConfiguration:(NSURLSessionConfiguration *)configuration;
 
