@@ -1,9 +1,9 @@
 #import <Foundation/Foundation.h>
 #import "SCIProxyManager.h"
 
-// Apply the user-configured proxy to the common NSURLSession configurations
-// created by Instagram. This is app-only: it does not install a VPN profile
-// and does not affect other apps on the device.
+// App-only proxy integration for URLSession.
+// The actual proxy is configured by SCIProxyManager using
+// NSURLSessionConfiguration.proxyConfigurations on modern iOS.
 
 %hook NSURLSessionConfiguration
 
@@ -23,17 +23,6 @@
     NSURLSessionConfiguration *config = %orig(identifier);
     [SCIProxyManager applyToConfiguration:config];
     return config;
-}
-
-- (void)setConnectionProxyDictionary:(NSDictionary *)dictionary {
-    if ([SCIProxyManager isEnabled]) {
-        NSDictionary *proxy = [SCIProxyManager proxyDictionary];
-        if (proxy.count > 0) {
-            %orig(proxy);
-            return;
-        }
-    }
-    %orig(dictionary);
 }
 
 %end
