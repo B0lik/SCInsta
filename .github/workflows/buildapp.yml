@@ -85,6 +85,16 @@ jobs:
               env:
                 THEOS: ${{ github.workspace }}/theos
 
+            - name: Prepare sing-box Libbox
+              run: |
+                cd main
+                mkdir -p vendor-libbox
+                curl -L --fail --retry 3 -o vendor-libbox/Libbox-ios.xcframework.zip \
+                  https://github.com/proother/sing-box-lib/releases/download/v1.14.2/Libbox-ios.xcframework.zip
+                echo "40382d6e402edb8ac71bbac92435ef200ae1004e11291c5454a5c0fa48eb34a0  vendor-libbox/Libbox-ios.xcframework.zip" | shasum -a 256 -c -
+                ditto -x -k vendor-libbox/Libbox-ios.xcframework.zip vendor-libbox
+                test -f vendor-libbox/Libbox.xcframework/ios-arm64/Libbox.framework/Versions/A/Libbox
+
             - name: Prepare Instagram IPA
               run: |
                 cd main

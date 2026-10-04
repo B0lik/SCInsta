@@ -1,27 +1,26 @@
 #import <Foundation/Foundation.h>
-#import "SCIProxyManager.h"
+#import "SCISubscriptionManager.h"
 
-// App-only proxy integration for URLSession.
-// The actual proxy is configured by SCIProxyManager using
-// NSURLSessionConfiguration.proxyConfigurations on modern iOS.
+// Route Instagram's URLSession traffic through the app-local sing-box tunnel.
+// The tunnel itself listens only on 127.0.0.1 and does not affect other apps.
 
 %hook NSURLSessionConfiguration
 
 + (NSURLSessionConfiguration *)defaultSessionConfiguration {
     NSURLSessionConfiguration *config = %orig;
-    [SCIProxyManager applyToConfiguration:config];
+    [SCISubscriptionManager applyTunnelToConfiguration:config];
     return config;
 }
 
 + (NSURLSessionConfiguration *)ephemeralSessionConfiguration {
     NSURLSessionConfiguration *config = %orig;
-    [SCIProxyManager applyToConfiguration:config];
+    [SCISubscriptionManager applyTunnelToConfiguration:config];
     return config;
 }
 
 + (NSURLSessionConfiguration *)backgroundSessionConfigurationWithIdentifier:(NSString *)identifier {
     NSURLSessionConfiguration *config = %orig(identifier);
-    [SCIProxyManager applyToConfiguration:config];
+    [SCISubscriptionManager applyTunnelToConfiguration:config];
     return config;
 }
 

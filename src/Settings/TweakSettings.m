@@ -1,5 +1,5 @@
 #import "TweakSettings.h"
-#import "../Features/General/SCIProxyManager.h"
+#import "../Features/General/SCISubscriptionManager.h"
 
 @implementation SCITweakSettings
 
@@ -25,23 +25,23 @@
         @{
             @"header": @"",
             @"rows": @[
-                [SCISetting navigationCellWithTitle:@"Сеть / прокси"
-                                           subtitle:[SCIProxyManager statusText]
-                                               icon:[SCISymbol symbolWithName:@"network"]
+                [SCISetting navigationCellWithTitle:@"VPN / подписка"
+                                           subtitle:[SCISubscriptionManager statusText]
+                                               icon:[SCISymbol symbolWithName:@"shield.lefthalf.filled"]
                                         navSections:@[@{
-                                            @"header": @"Доступ без отдельного VPN",
-                                            @"footer": @"Прокси применяется только к сетевым запросам Instagram. Для работы нужен доступный HTTP(S) или SOCKS5-прокси. TLS не расшифровывается.",
+                                            @"header": @"VPN только для Instagram",
+                                            @"footer": @"Вставьте обычную ссылку VPN-подписки. Instagram поднимет локальный sing-box-туннель внутри приложения; системный VPN не включается и другие приложения не затрагиваются.",
                                             @"rows": @[
-                                                [SCISetting buttonCellWithTitle:@"Настроить прокси"
-                                                                       subtitle:@"Адрес, порт и при необходимости логин/пароль"
-                                                                           icon:[SCISymbol symbolWithName:@"server.rack"]
-                                                                         action:^(void) { [SCIProxyManager presentConfigurationUI]; }],
-                                                [SCISetting buttonCellWithTitle:@"Проверить прокси"
-                                                                       subtitle:@"Проверяет доступ к Instagram через настроенный прокси"
+                                                [SCISetting buttonCellWithTitle:@"Импортировать подписку"
+                                                                       subtitle:@"VLESS, VMess, Trojan, Shadowsocks или sing-box JSON"
+                                                                           icon:[SCISymbol symbolWithName:@"link"]
+                                                                         action:^(void) { [SCISubscriptionManager presentSubscriptionUI]; }],
+                                                [SCISetting buttonCellWithTitle:@"Проверить VPN"
+                                                                       subtitle:@"Показывает внешний IP через встроенный туннель"
                                                                            icon:[SCISymbol symbolWithName:@"network.badge.shield.half.filled"]
-                                                                         action:^(void) { [SCIProxyManager presentConnectionTest]; }],
+                                                                         action:^(void) { [SCISubscriptionManager presentConnectionTest]; }],
                                                 [SCISetting staticCellWithTitle:@"Текущий статус"
-                                                                      subtitle:[SCIProxyManager statusText]
+                                                                      subtitle:[SCISubscriptionManager statusText]
                                                                           icon:[SCISymbol symbolWithName:@"checkmark.shield"]]
                                             ]
                                         }]
