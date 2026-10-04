@@ -110,7 +110,6 @@ static NSString * const kSCIProxyPassword = @"sci_proxy_password";
     NSInteger currentPort = [d integerForKey:kSCIProxyPort];
     NSString *currentUser = [d stringForKey:kSCIProxyUsername] ?: @"";
     NSString *currentPass = [d stringForKey:kSCIProxyPassword] ?: @"";
-    NSString *currentType = [d stringForKey:kSCIProxyType] ?: @"http";
 
     UIAlertController *alert = [UIAlertController
         alertControllerWithTitle:@"Прокси только для Instagram"
@@ -179,6 +178,56 @@ static NSString * const kSCIProxyPassword = @"sci_proxy_password";
     [alert addAction:[UIAlertAction actionWithTitle:@"Отмена" style:UIAlertActionStyleCancel handler:nil]];
 
     [[self topController] presentViewController:alert animated:YES completion:nil];
+}
+
++ (void)presentConnectionTest {
+    UIViewController *presenter = [self topController];
+
+    if (![self isEnabled] || [self proxyDictionary].count == 0) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Прокси не настроен"
+                                                                       message:@"Сначала укажите адрес и порт прокси."
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        [presenter presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    [self applyToConfiguration:config];
+    config.timeoutIntervalForRequest = 12.0;
+    config.timeoutIntervalForResource = 15.0;
+
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://www.instagram.com/"]];
+    request.HTTPMethod = @"GET";
+    request.timeoutInterval = 12.0;
+
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request
+                                           completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSString *title = nil;
+            NSString *message = nil;
+
+            if (error) {
+                title = @"Прокси не отвечает";
+                message = error.localizedDescription ?: @"Не удалось выполнить запрос через прокси.";
+            } else if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+                NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
+                title = (status >= 200 && status < 500) ? @"Прокси работает" : @"Ответ получен";
+                message = [NSString stringWithFormat:@"Instagram ответил с HTTP-кодом %ld.", (long)status];
+            } else {
+                title = @"Прокси работает";
+                message = @"Соединение с Instagram через прокси установлено.";
+            }
+
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                                           message:message
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+            [[self topController] presentViewController:alert animated:YES completion:nil];
+        });
+    }];
+    [task resume];
 }
 
 @end
